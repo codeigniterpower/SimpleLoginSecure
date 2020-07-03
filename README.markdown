@@ -1,103 +1,94 @@
-#SimpleLogin Secure
-**Name: SimpleLoginSecure 3.0**  
-**Released: Feb 8, 2012**  
-**Updated: Oct 5, 2016**  
-**CI Version: Works now with CodeIgniter 2 and 3**  
-**Author: Stéphane Bourzeix**  
+Codeigniter - SimpleLogin Secure
+=============
 
-_SimpleLogin-Secure was written by Alex Dunae._  
-_SimpleLogin-Secure for Code Igniter is a modified version of Anthony Graddy’s Simplelogin library._  
-_SimpleLogin-Secure version 2 and 3 are by Stéphane Bourzeix from Alex Dunae's code._  
+Quick and simple login library that will get you up and running with an unobtrusive authorization system very quickly. It does not try to guess how you want to structure your app, it simply tries to give you a little help
 
-* ChangeLog:  
-  * Ugraded to work with BOTH CodeIgniter 2.0 AND 3.0
-  * Added a version test and use "sess regenerate" or "sess create" depending on version
-  * Added a new SQL file for creating the table for newer versions of MYSQL
-  * Upgraded to use the PHPASS version 0.3  
-  * Changed the "getwhere()" calls to "get_where()" for Code Igniter 2.0 compatibility.  
-  * Added the Update function to allow to change the user's email from your classes.
-  * Added the edit_password function to compare and change passwords
-  * Removed the Now() MySQL call and using PHP date() instead
-  * Bug fixes
-  * Added TAG v2.1.2 as a reference to the old version for CI 2
+SimpleLogin-Secure uses the phpass framework for secure, portable password hashing instead of straight md5 without a salt.  Secondly, SimpleLogin-Secure uses an e-mail address instead of a user name as the login key.  And finally, it adds user_date, user_modified and user_last_login date/time fields to the default install.
 
+For Original more information, visit Simple login library for CI
 
+## FEATURES
 
-In Anthony’s words:  
+* **easy helper/class with autouser management**. to archieve login attemps.
+* Ugraded to work with BOTH CodeIgniter 2.0 AND 3.0
+* Added a version test and use "sess regenerate" or "sess create" depending on version
+* Use the PHPASS library 
+* Update function to allow to change the user's email from your classes or whatever.
+* An edit_password function to compare and change passwords
 
->Simplelogin is designed to give you a quick and simple login library that will get you up and running with an unobtrusive authorization system very quickly. It does not try to guess how you want to structure your app, it simply tries to give you a little help.
+## INSTALLING
 
-There are three primary modifications to Anthony’s original code.  Most importantly, SimpleLogin-Secure uses the phpass framework for secure, portable password hashing instead of straight md5 without a salt.  Secondly, SimpleLogin-Secure uses an e-mail address instead of a user name as the login key.  And finally, it adds user_date, user_modified and user_last_login date/time fields to the default install.
+Comes included with CodeigniterPowered, but for CI 2 or CI3:
 
-For more information on why md5 hashing is not enough, see the excellent post about password schemes on the Matasano Security blog.
+**Requirements**
 
-**Installation and configuration :**
+* Codeigniter 2.x or 3.x
+* PHP 5.3
 
-Copy SimpleLoginSecure.php and the entire phpass-0.3 directory to your application/libraries directory.
+**Manual controlled install**
 
-Create your database table using the following SQL sample. SQL files are provided.  
+**1)** Located your Codeigniter proyect and then download the repository at the `Applications` root directory
+
+`wget https://github.com/codeigniterpower/codeigniter-SimpleLoginSecure/archive/master.tar.gz -O ci-simpleloginsecure.tar.gz`
+
+**2)** Copy  and the entire phpass-0.3 directory to your application/libraries directory.
+
+```
+untar -xz ci-simpleloginsecure.tar.gz
+mv codeigniter-SimpleLoginSecure/SimpleLoginSecure.php libraries/
+mv codeigniter-SimpleLoginSecure/phpass-0.3 libraries/
+rm -rf codeigniter-SimpleLoginSecure
+```
+
+**3)** Then, just In controlers or in the views:
+
+``` php
+$this->load->library('SimpleLoginSecure'); // load the library
+$this->simpleloginsecure->create('user@example.com', 'uS$rpass!'); // create a new user
+echo "User? " . $this->simpleloginsecure->login('user@example.com', 'uS$rpass!');
+```
+
+## CONFIGURATION
+
+Create your database table using the following SQL sample. SQL files are provided [create_users_table.sql](create_users_table.sql)
 You can also edit the hash length and portability constants at the top of SimpleLoginSecure.php.
 
-    CREATE TABLE `users` (
-      `user_id` int(10) unsigned NOT NULL auto_increment,
-      `user_email` varchar(255) NOT NULL default '',
-      `user_pass` varchar(60) NOT NULL default '',
-      `user_date` datetime NOT NULL default '0000-00-00 00:00:00',
-      `user_modified` datetime NOT NULL default '0000-00-00 00:00:00',
-      `user_last_login` datetime NULL default NULL,
-       PRIMARY KEY  (`user_id`),
-       UNIQUE KEY `user_email` (`user_email`)
-    ) DEFAULT CHARSET=utf8; 
+``` sql
+CREATE TABLE `users` (
+  `user_id` INTEGER NOT NULL DEFAULT 00000000000000, -- must use gen id in php code
+  `user_email` TEXT NOT NULL DEFAULT '', -- compat with all dbs, but cannot be empty
+  `user_pass` TEXT NOT NULL DEFAULT '', -- compat with all dbs, but cannot be empty
+  `user_date` DATETIME NOT NULL DEFAULT '1000-01-01 00:00:00',  -- compat with all dbs
+  `user_modified` DATETIME NOT NULL DEFAULT '1000-01-01 00:00:00',  -- compat with all dbs
+  `user_last_login` DATETIME NULL DEFAULT '1000-01-01 00:00:00', -- compat with all dbs
+  PRIMARY KEY  (`user_id`)
+);
+```
 
-or for newer versions of MYSQL (>=5.6) use :
+## USAGE
 
-	CREATE TABLE `users` (
-  		`user_id` int(10) unsigned NOT NULL auto_increment,
-  		`user_email` varchar(255) NOT NULL default '',
-  		`user_pass` varchar(60) NOT NULL default '',
-  		`user_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  		`user_modified` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  		`user_last_login` datetime DEFAULT NULL,
-  	PRIMARY KEY  (`user_id`),
-  	UNIQUE KEY `user_email` (`user_email`)
-	) DEFAULT CHARSET=utf8;
 
-**Use**  
-
-The methods exposed by SimpleLogin-Secure are identical to those of Simplelogin.
-
-    // load the library
-    $this->load->library('SimpleLoginSecure');
-
-    // create a new user
-    $this->simpleloginsecure->create('user@example.com', 'uS$rpass!');
-
-    // attempt to login
+```php
+    $this->load->library('SimpleLoginSecure'); // load the library
+    $this->simpleloginsecure->create('user@example.com', 'uS$rpass!'); // create a new user
     if($this->simpleloginsecure->login('user@example.com', 'uS$rpass!')) {
-        // success
+        // success attempt to login
     }
-
-    // check if logged in
     if($this->session->userdata('logged_in')) {
-        // logged in
+        // success check if logged in
     }
-
-    // logout
-    $this->simpleloginsecure->logout();
-
-    // delete by user ID
-    $this->simpleloginsecure->delete($user_id); 
-
-	// Update user Email
-	$this->simpleloginsecure->update($user_id, $user_email, $auto_login);
-
-	// Update Password
-	$this->simpleloginsecure->edit_password($user_email, $old_pass, $new_pass)
+    $this->simpleloginsecure->logout();// logout
+    $this->simpleloginsecure->delete($user_id);  // delete by user ID
+    $this->simpleloginsecure->update($user_id, $user_email, $auto_login); // Update user Email
+    $this->simpleloginsecure->edit_password($user_email, $old_pass, $new_pass) // Update Password
+```
 
 
+## Credits
 
-_Credits_  
-_The original Simplelogin library was written by Anthony Graddy._    
-_SimpleLogin-Secure was written by Alex Dunae, 2008._  
-_SimpleLogin-Secure new version, 2.0, for Code Igniter II by Stéphane Bourzeix 2011/2013._
-_SimpleLogin-Secure new version, 3.0, for Code Igniter II and III by Stéphane Bourzeix 2016._
+This is specific AD-HOC folk for Codeigniter-powered, see original project for.
+
+- Copyright © original Simplelogin library was written by Anthony Graddy._    
+- Copyright © _SimpleLogin-Secure was written by Alex Dunae, 2008._  
+- Copyright © _SimpleLogin-Secure new version, 2.0, for Code Igniter II by Stéphane Bourzeix 2011/2013._
+- Copyright © _SimpleLogin-Secure new version, 3.0, for Code Igniter II and III by Stéphane Bourzeix 2016._
